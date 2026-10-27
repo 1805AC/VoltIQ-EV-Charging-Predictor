@@ -37,13 +37,20 @@ st.markdown("""
     color: #081225;
 } 
 [data-testid="stSidebar"] {
-    background: linear-gradient(
-        180deg,
-        #172554 0%,
-        #312e81 55%,
-        #164e63 100%
-    ) !important;
-    border-right: 1px solid #38bdf8;
+    background: linear-gradient(180deg, #101B35, #17264B);
+    border-right: 1px solid #00E5FF;
+}
+
+[data-testid="stSidebar"] h2 {
+    color: #00E5FF !important;
+}
+
+[data-testid="stSidebar"] h3 {
+    color: #B69CFF !important;
+}
+
+[data-testid="stSidebar"] label {
+    color: #E2E8F0 !important;
 } 
 .block-container {
     padding-top: 2rem; 
