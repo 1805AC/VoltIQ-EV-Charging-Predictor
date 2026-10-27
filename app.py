@@ -37,9 +37,14 @@ st.markdown("""
     color: #081225;
 } 
 [data-testid="stSidebar"] {
-    background: #0B1427;
-    border-right: 1px solid #243650;
-}
+    background: linear-gradient(
+        180deg,
+        #172554 0%,
+        #312e81 55%,
+        #164e63 100%
+    ) !important;
+    border-right: 1px solid #38bdf8;
+} 
 .block-container {
     padding-top: 2rem; 
     padding-bottom: 3rem;
