@@ -1,5 +1,6 @@
 
 # VoltIQ – EV Charging Demand Predictor
+🚀 **Live Demo:** [Open VoltIQ Dashboard](https://voltiq-ev-charging-predictor-mazwff9nsrb267g3nkbiwa.streamlit.app/)
 
 ## About the Project
 VoltIQ is a Machine Learning mini-project that predicts electric vehicle (EV) charging energy demand based on the hour, temperature, and number of charging sessions.
