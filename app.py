@@ -41,13 +41,16 @@ st.markdown("""
     border-right: 1px solid #243650;
 }
 .block-container {
-    padding-top: 2rem; 
+    padding-top: 0rem; 
     padding-bottom: 3rem;
     max-width: 1450px;
 }
-h1, h2, h3, p, label {
+h1, h2, h3, p, label { 
     color: #F1F5F9;
 }
+div[data-testid="stVerticalBlock"] > div:has(> .hero) {
+    margin-top: -1rem;
+} 
 .hero {
     background: linear-gradient(115deg, #123B45, #17264B 65%, #27306B);
     border: 1px solid #2E6971;
