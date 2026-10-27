@@ -1,13 +1,19 @@
-import streamlit as st
+import json
+import os
+import pickle
+from datetime import datetime
+from pathlib import Path
+
+import numpy as np
 import pandas as pd
-import numpy as np 
-import pickle 
-import json 
-import os 
-from datetime import datetime 
-from sklearn.model_selection import train_test_split 
-# Load the trained regression model
-with open("models/ev_demand_model.pkl", "rb") as file:
+import streamlit as st
+from sklearn.metrics import mean_absolute_error
+from sklearn.model_selection import train_test_split
+
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BASE_DIR / "models" / "ev_demand_model.pkl"
+
+with MODEL_PATH.open("rb") as file:
     model = pickle.load(file)
 
 st.set_page_config(
@@ -190,173 +196,7 @@ with st.sidebar:
 
     st.divider()
     st.caption("Prototype • Demo calculations") 
-    
-# ---------- DEMO CALCULATION ----------
-# These calculations are illustrative, not trained ML predictions.
-peak_factor = 1.25 if hour in range(7, 11) or hour in range(17, 22) else 0.75
-
-if temperature < 10:
-    weather_factor = 1.12
-elif temperature > 32:
-    weather_factor = 1.10
-else:
-    weather_factor = 1.0
-
-# Prepare input for the trained ML model
-input_data = pd.DataFrame([{ 
-    "hour": hour,
-    "temperature_c": temperature,
-    "charging_sessions": sessions
-}]) 
-
-# Predict energy demand using the trained model
-predicted_demand = model.predict(input_data)[0] 
-
-# Keep the value non-negative
-predicted_demand = max(0, predicted_demand) 
-st.success("Prediction completed successfully!")
-
-st.metric(
-    label="Predicted Energy Demand",
-    value=f"{predicted_demand:.2f} kWh"
-) 
-# Dynamic Pricing Logic
-if predicted_demand <= 50:
-    price = 6
-elif predicted_demand <= 100:
-    price = 8
-elif predicted_demand <= 150:
-    price = 12
-else:
-    price = 15
-
-st.metric(
-    label="Recommended Charging Price",
-    value=f"₹{price}/kWh"
-) 
-st.subheader("Grid Load Status") 
-
-if predicted_demand < 40:
-    st.success("🟢 Low Grid Load - Charging is Normal")
-elif predicted_demand < 80:
-    st.warning("🟡 Medium Grid Load - Monitor Charging")
-else:
-    st.error("🔴 High Grid Load - Reduce Peak Charging") 
-    st.subheader("Estimated Charging Revenue")
-
-estimated_revenue = predicted_demand * price
-
-st.metric(
-    label="Estimated Revenue",
-    value=f"₹{estimated_revenue:.2f}"
-)  
-st.subheader("Current Prediction Summary")
-
-summary = pd.DataFrame([{
-    "Predicted Demand (kWh)": round(predicted_demand, 2),
-    "Charging Price (₹/kWh)": price,
-    "Estimated Revenue (₹)": round(estimated_revenue, 2),
-    "Grid Status": (
-        "Low" if predicted_demand < 40
-        else "Medium" if predicted_demand < 80 
-        else "High"
-    )
-}])
-
-st.dataframe(summary, use_container_width=True) 
-history_file = "prediction_history.csv"
-
-if st.button("Save This Prediction"):
-    new_record = pd.DataFrame([{
-        "Date & Time": datetime.now().strftime("%d-%m-%Y %I:%M:%S %p"),
-        "Demand (kWh)": round(predicted_demand, 2),
-        "Price (₹/kWh)": price,
-        "Estimated Revenue (₹)": round(estimated_revenue, 2)
-    }])
-
-    if os.path.exists(history_file):
-        new_record.to_csv(
-            history_file, mode="a", header=False, index=False
-        )
-    else:
-        new_record.to_csv(history_file, index=False)
-
-    st.success("Prediction saved to history!") 
-st.subheader("Prediction History")
-
-if os.path.exists(history_file):
-    history = pd.read_csv(history_file)
-    st.dataframe(history, use_container_width=True)
-
-    st.download_button(
-        label="Download Prediction History",
-        data=history.to_csv(index=False),
-        file_name="prediction_history.csv",
-        mime="text/csv"
-    )
-else:
-    st.info("No prediction history available yet.") 
-st.subheader("Model Information") 
-
-st.write("Algorithm: Linear Regression")
-st.write("Training dataset: 36 sample records")
-st.write("Prediction target: Energy Demand (kWh)")
-
-st.info(
-    "This model uses hour, temperature, and charging sessions "
-    "to estimate energy demand."
-) 
-
-df = pd.read_csv("data/ev_charging_small_dataset.csv")
-
-X = df[["hour", "temperature_c", "charging_sessions"]]
-y = df["energy_demand_kwh"]
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
-
-predictions = model.predict(X_test) 
-from sklearn.metrics import mean_absolute_error
-
-mae = mean_absolute_error(y_test, predictions)
-
-st.metric("Prediction Error (MAE)", f"{mae:.2f} kWh") 
-
-
-st.subheader("Actual vs Predicted Demand")
-
-import matplotlib.pyplot as plt
-
-chart_data = pd.DataFrame({
-    "Actual Demand": y_test.values,
-    "Predicted Demand": predictions
-})
-
-st.line_chart(chart_data)
-with open("models/model_metrics.json", "r") as file:
-    metrics = json.load(file)
-
-st.write("Mean Absolute Error (MAE):", metrics["mae"])
-st.write("R² Score:", metrics["r2_score"])
-st.caption("Prediction generated by a trained Linear Regression model.")
-
-load_percent = predicted_demand / capacity * 100
-
-if load_percent >= 90:
-    status = "HIGH LOAD"
-    status_color = "#FF7185"
-    suggested_tariff = base_tariff * 1.25
-elif load_percent >= 65:
-    status = "MODERATE"
-    status_color = "#FFD166"
-    suggested_tariff = base_tariff * 1.10
-else:
-    status = "NORMAL"
-    status_color = "#57F3BE"
-    suggested_tariff = base_tariff
-
-# ---------- HERO ---------- 
+ # ---------- HERO ----------
 st.markdown("""
 <div class="hero">
     <div class="eyebrow">NEXT-GENERATION ENERGY ANALYTICS</div>
@@ -365,11 +205,155 @@ st.markdown("""
         Explore charging demand, monitor grid capacity and
         understand how intelligent pricing could support EV infrastructure.
     </div>
-    <br>
-    <span class="pill">● INTERACTIVE DEMO</span>
+    <div class="hero-badge">● INTERACTIVE DEMO</div>
 </div>
-""", unsafe_allow_html=True) 
+""", unsafe_allow_html=True)
 
+    
+# ---------- DEMO CALCULATIONS ---------- 
+peak_factor = 1.25 if hour in range(7, 11) or hour in range(17, 22) else 0.75
+
+if temperature < 10:
+    weather_factor = 1.12
+elif temperature > 32:
+    weather_factor = 1.10
+else:
+    weather_factor = 1.0 
+
+    input_data = pd.DataFrame([ 
+        {
+            "hour": hour,
+            "temperature_c": temperature,
+            "charging_sessions": sessions,
+        }
+    ])
+
+    predicted_demand = max(0.0, float(model.predict(input_data)[0]))
+    predicted_demand *= peak_factor * weather_factor
+    predicted_demand = max(0.0, predicted_demand)
+
+    st.success("Prediction completed successfully!")
+    st.metric("Predicted Energy Demand", f"{predicted_demand:.2f} kWh")
+
+    if predicted_demand <= 50:
+        price = 6
+    elif predicted_demand <= 100:
+        price = 8
+    elif predicted_demand <= 150:
+        price = 12
+    else:
+        price = 15
+
+    st.metric("Recommended Charging Price", f"₹{price}/kWh")
+    st.subheader("Grid Load Status")
+
+    if predicted_demand < 40:
+        st.success("🟢 Low Grid Load - Charging is Normal")
+    elif predicted_demand < 80:
+        st.warning("🟡 Medium Grid Load - Monitor Charging")
+    else:
+        st.error("🔴 High Grid Load - Reduce Peak Charging")
+
+    estimated_revenue = predicted_demand * price
+    st.subheader("Estimated Charging Revenue")
+    st.metric("Estimated Revenue", f"₹{estimated_revenue:.2f}")
+
+    st.subheader("Current Prediction Summary")
+    summary = pd.DataFrame(
+        [{
+            "Predicted Demand (kWh)": round(predicted_demand, 2),
+            "Charging Price (₹/kWh)": price,
+            "Estimated Revenue (₹)": round(estimated_revenue, 2),
+            "Grid Status": (
+                "Low" if predicted_demand < 40 else "Medium" if predicted_demand < 80 else "High"
+            ),
+        }]
+    )
+    st.dataframe(summary, use_container_width=True)
+
+    history_file = BASE_DIR / "prediction_history.csv"
+    if st.button("Save This Prediction"):
+        new_record = pd.DataFrame(
+            [{
+                "Date & Time": datetime.now().strftime("%d-%m-%Y %I:%M:%S %p"),
+                "Demand (kWh)": round(predicted_demand, 2),
+                "Price (₹/kWh)": price,
+                "Estimated Revenue (₹)": round(estimated_revenue, 2),
+            }]
+        )
+
+        if history_file.exists():
+            new_record.to_csv(history_file, mode="a", header=False, index=False)
+        else:
+            new_record.to_csv(history_file, index=False)
+
+        st.success("Prediction saved to history!")
+
+    st.subheader("Prediction History")
+    if history_file.exists():
+        history = pd.read_csv(history_file)
+        st.dataframe(history, use_container_width=True)
+        st.download_button(
+            label="Download Prediction History",
+            data=history.to_csv(index=False),
+            file_name="prediction_history.csv",
+            mime="text/csv",
+        )
+    else:
+        st.info("No prediction history available yet.")
+
+    st.subheader("Model Information")
+    st.write("Algorithm: Linear Regression")
+    st.write("Training dataset: 36 sample records")
+    st.write("Prediction target: Energy Demand (kWh)")
+    st.info(
+        "This model uses hour, temperature, and charging sessions to estimate energy demand."
+    )
+
+    dataset_path = BASE_DIR / "data" / "ev_charging_small_dataset.csv"
+    df = pd.read_csv(dataset_path)
+
+    X = df[["hour", "temperature_c", "charging_sessions"]]
+    y = df["energy_demand_kwh"]
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    predictions = model.predict(X_test)
+    mae = mean_absolute_error(y_test, predictions)
+
+    st.metric("Prediction Error (MAE)", f"{mae:.2f} kWh")
+    st.subheader("Actual vs Predicted Demand")
+
+    chart_data = pd.DataFrame(
+        {
+            "Actual Demand": y_test.values,
+            "Predicted Demand": predictions,
+        }
+    )
+    st.line_chart(chart_data)
+
+    metrics_path = BASE_DIR / "models" / "model_metrics.json"
+    with metrics_path.open("r") as file:
+        metrics = json.load(file)
+
+    st.write("Mean Absolute Error (MAE):", metrics["mae"])
+    st.write("R² Score:", metrics["r2_score"])
+    st.caption("Prediction generated by a trained Linear Regression model.")
+
+    load_percent = (predicted_demand / capacity * 100) if capacity else 0
+    if load_percent >= 90:
+        status = "HIGH LOAD"
+        status_color = "#FF7185"
+        suggested_tariff = base_tariff * 1.25
+    elif load_percent >= 65:
+        status = "MODERATE"
+        status_color = "#FFD166"
+        suggested_tariff = base_tariff * 1.10
+    else:
+        status = "NORMAL"
+        status_color = "#57F3BE"
+        suggested_tariff = base_tariff
+
+# ---------- HERO ---------- 
 
 
 st.subheader("⚡ Station overview")
@@ -484,4 +468,4 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.markdown(
     "<center><small>VoltIQ • Smart Grid EV Analytics • Mini Project</small></center>",
     unsafe_allow_html=True
-)
+) 
