@@ -177,7 +177,19 @@ with st.sidebar:
     )
 
     st.divider()
-    st.caption("Prototype • Demo calculations")
+    st.caption("Prototype • Demo calculations") 
+    st.markdown("""
+<div class="hero">
+    <div class="eyebrow">NEXT-GENERATION ENERGY ANALYTICS</div>
+    <div class="hero-title">Smart EV Charging<br>Demand Predictor ⚡</div>
+    <div class="hero-sub">
+        Explore charging demand, monitor grid capacity and
+        understand how intelligent pricing could support EV infrastructure.
+    </div>
+    <br>
+    <span class="pill">● INTERACTIVE DEMO</span>
+</div>
+""", unsafe_allow_html=True) 
 
 # ---------- DEMO CALCULATION ----------
 # These calculations are illustrative, not trained ML predictions.
@@ -345,18 +357,7 @@ else:
     suggested_tariff = base_tariff
 
 # ---------- HERO ----------
-st.markdown("""
-<div class="hero">
-    <div class="eyebrow">NEXT-GENERATION ENERGY ANALYTICS</div>
-    <div class="hero-title">Smart EV Charging<br>Demand Predictor ⚡</div>
-    <div class="hero-sub">
-        Explore charging demand, monitor grid capacity and
-        understand how intelligent pricing could support EV infrastructure.
-    </div>
-    <br>
-    <span class="pill">● INTERACTIVE DEMO</span>
-</div>
-""", unsafe_allow_html=True)
+
 
 st.subheader("⚡ Station overview")
 st.caption("Change the controls in the sidebar to explore different scenarios.")
