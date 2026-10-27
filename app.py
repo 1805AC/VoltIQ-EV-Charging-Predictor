@@ -178,19 +178,7 @@ with st.sidebar:
 
     st.divider()
     st.caption("Prototype • Demo calculations") 
-    st.markdown("""
-<div class="hero">
-    <div class="eyebrow">NEXT-GENERATION ENERGY ANALYTICS</div>
-    <div class="hero-title">Smart EV Charging<br>Demand Predictor ⚡</div>
-    <div class="hero-sub">
-        Explore charging demand, monitor grid capacity and
-        understand how intelligent pricing could support EV infrastructure.
-    </div>
-    <br>
-    <span class="pill">● INTERACTIVE DEMO</span>
-</div>
-""", unsafe_allow_html=True) 
-
+    
 # ---------- DEMO CALCULATION ----------
 # These calculations are illustrative, not trained ML predictions.
 peak_factor = 1.25 if hour in range(7, 11) or hour in range(17, 22) else 0.75
@@ -356,7 +344,20 @@ else:
     status_color = "#57F3BE"
     suggested_tariff = base_tariff
 
-# ---------- HERO ----------
+# ---------- HERO ---------- 
+st.markdown("""
+<div class="hero">
+    <div class="eyebrow">NEXT-GENERATION ENERGY ANALYTICS</div>
+    <div class="hero-title">Smart EV Charging<br>Demand Predictor ⚡</div>
+    <div class="hero-sub">
+        Explore charging demand, monitor grid capacity and
+        understand how intelligent pricing could support EV infrastructure.
+    </div>
+    <br>
+    <span class="pill">● INTERACTIVE DEMO</span>
+</div>
+""", unsafe_allow_html=True) 
+
 
 
 st.subheader("⚡ Station overview")
