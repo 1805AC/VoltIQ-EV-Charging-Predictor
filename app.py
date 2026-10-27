@@ -121,8 +121,35 @@ div.stButton > button {
 div.stButton > button:hover {
     border: 1px solid #FFFFFF;
     color: #071426;
+} 
+header[data-testid="stHeader"] {
+    background-color: #0b1428 !important;
 }
-</style>
+
+[data-testid="stToolbar"] {
+    background-color: #0b1428 !important;
+}
+
+.stAppHeader {
+    background-color: #0b1428 !important;
+}
+
+[data-testid="stDecoration"] {
+    display: none !important;
+} 
+.stAppHeader,
+header[data-testid="stHeader"],
+[data-testid="stToolbar"] {
+    background: #0b1428 !important;
+    color: #0b1428 !important;
+    box-shadow: none !important;
+}
+
+.stAppHeader::before {
+    background: #0b1428 !important;
+} 
+</style> 
+
 """, unsafe_allow_html=True)
 
 # ---------- SIDEBAR ----------
